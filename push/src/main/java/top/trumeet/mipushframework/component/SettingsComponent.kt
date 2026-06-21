@@ -237,9 +237,9 @@ fun InfoDialogPreview() {
 @Composable
 fun SettingsItemPreview() {
     SettingsItem(
-        title = stringResource(R.string.settings_start_foreground_service),
-        summary = stringResource(R.string.settings_start_foreground_service_summary),
-        key = "StartForegroundService",
+        title = stringResource(R.string.settings_debug_mode),
+        summary = stringResource(R.string.settings_debug_mode_summary),
+        key = "DebugMode",
         defaultValue = false,
         enabled = false
     )
@@ -249,6 +249,6 @@ fun SettingsItemPreview() {
 @Composable
 fun SingleLineSettingsItemPreview() {
     SettingsItem(
-        title = stringResource(R.string.settings_start_foreground_service)
+        title = stringResource(R.string.settings_debug_mode)
     ) {}
 }

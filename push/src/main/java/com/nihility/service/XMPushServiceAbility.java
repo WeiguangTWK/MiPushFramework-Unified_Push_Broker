@@ -12,7 +12,6 @@ import com.oasisfeng.condom.CondomContext;
 import com.xiaomi.channel.commonutils.reflect.JavaCalls;
 import com.xiaomi.push.revival.NotificationsRevivalForSelfUpdated;
 import com.xiaomi.push.service.BackgroundActivityStartEnabler;
-import com.xiaomi.push.service.PullAllApplicationDataFromServerJob;
 import com.xiaomi.push.service.XMPushService;
 import com.xiaomi.push.service.XMPushServiceMessenger;
 import com.xiaomi.xmsf.push.control.XMOutbound;
@@ -30,7 +29,6 @@ public class XMPushServiceAbility extends XMPushServiceListenerNotifier {
 
     private void initListeners(XMPushService pushService) {
         addListener(new RegisterRecordAbility(new RegisterRecorder(pushService)));
-        addListener(new ForegroundAbility(new ForegroundHelper(pushService)));
         addListener(new MessengerAbility(new XMPushServiceMessenger(pushService)));
         if (SDK_INT > P) {
             addListener(new XMPushServiceListener() {
@@ -43,14 +41,6 @@ public class XMPushServiceAbility extends XMPushServiceListenerNotifier {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             addListener(new NotificationsRevivalAbility(new NotificationsRevivalForSelfUpdated(pushService, sbn -> sbn.getTag() == null)));
         }
-        addListener(new XMPushServiceListener() {
-            @Override
-            public void connectionStatusChanged(ConnectionStatus connectionStatus) {
-                if (connectionStatus == ConnectionStatus.connected) {
-                    pushService.executeJob(new PullAllApplicationDataFromServerJob(pushService));
-                }
-            }
-        });
     }
 
     // todo: 搞清楚这里 hook 了什么，起了什么作用，要不要移到 mipush_hook 中

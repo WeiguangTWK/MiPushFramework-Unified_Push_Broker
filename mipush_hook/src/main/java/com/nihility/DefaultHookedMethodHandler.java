@@ -75,6 +75,12 @@ class DefaultHookedMethodHandler implements HookedMethodHandler {
     }
 
     @Override
+    public Object scheduleConnect(ProceedingJoinPoint joinPoint, XMPushService pushService,
+                                  boolean immediate) throws Throwable {
+        return joinPoint.proceed();
+    }
+
+    @Override
     public void sendMessage(JoinPoint joinPoint, Intent intent) {
 
     }

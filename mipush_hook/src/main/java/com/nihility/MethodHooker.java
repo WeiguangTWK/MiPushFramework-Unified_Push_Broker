@@ -116,6 +116,13 @@ public class MethodHooker implements HookedMethodHandler {
     }
 
     @Override
+    @Around("execution(* com.xiaomi.push.service.XMPushService.scheduleConnect(..)) && this(pushService) && args(immediate)")
+    public Object scheduleConnect(final ProceedingJoinPoint joinPoint,
+                                  XMPushService pushService, boolean immediate) throws Throwable {
+        return hookHandler().scheduleConnect(joinPoint, pushService, immediate);
+    }
+
+    @Override
     @Before("execution(* com.xiaomi.push.service.XMPushService.sendMessage*(..)) && args(intent)")
     public void sendMessage(final JoinPoint joinPoint, Intent intent) {
         hookHandler().sendMessage(joinPoint, intent);

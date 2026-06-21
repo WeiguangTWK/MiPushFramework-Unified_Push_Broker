@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.xiaomi.push.service.ClientEventDispatcher;
+import com.elvishew.xlog.XLog;
 
 /**
  * Created by Trumeet on 2017/8/25.
@@ -14,8 +14,9 @@ import com.xiaomi.push.service.ClientEventDispatcher;
 public class BootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (intent != null && intent.getAction().equals("android.intent.action.BOOT_COMPLETED")) {
-            new ClientEventDispatcher().notifyServiceStarted(context);
+        if (intent != null && "android.intent.action.BOOT_COMPLETED".equals(intent.getAction())) {
+            XLog.tag("BootReceiver").build().i(
+                    "Ignoring legacy boot self-start; runtime is broker-controlled");
         }
     }
 }

@@ -136,6 +136,21 @@ android.applicationVariants.all { variant ->
     variant.getProcessJavaResourcesProvider().get().dependsOn(taskName)
 }
 
+afterEvaluate {
+    if (tasks.findByName("unitTestClasses") == null) {
+        tasks.register("unitTestClasses") {
+            group = "verification"
+            description = "Compatibility aggregate for IDEs expecting the legacy unitTestClasses task."
+            dependsOn tasks.matching { task ->
+                final String name = task.name
+                (name.startsWith("compile") && name.contains("UnitTest"))
+                        || (name.startsWith("process") && name.contains("UnitTest"))
+                        || (name.startsWith("test") && name.endsWith("UnitTest"))
+            }
+        }
+    }
+}
+
 dependencies {
 // modules {
     implementation project(':common')

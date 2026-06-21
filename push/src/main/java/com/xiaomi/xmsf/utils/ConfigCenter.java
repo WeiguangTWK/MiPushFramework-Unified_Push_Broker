@@ -75,10 +75,6 @@ public class ConfigCenter {
         return getSharedPreferences(Utils.getApplication()).getBoolean("ShowAllEvents", false);
     }
 
-    public boolean isStartForegroundService() {
-        return getSharedPreferences(Utils.getApplication()).getBoolean("StartForegroundService", false);
-    }
-
     public void loadConfigurations(Context context) {
         Configurations.getInstance().init(context,
                 Global.ConfigCenter().getConfigurationDirectory(context));

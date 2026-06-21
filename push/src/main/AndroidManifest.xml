@@ -97,7 +97,9 @@
                     android:resource="@xml/filepaths" />
         </provider>
 
-        <receiver android:name=".push.service.receivers.BootReceiver">
+        <receiver
+                android:name=".push.service.receivers.BootReceiver"
+                android:enabled="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
@@ -192,6 +194,38 @@
         <service
                 android:name=".push.service.MiuiPushActivateService"
                 android:exported="true" />
+
+        <service
+                android:name=".pushbroker.MiPushProviderService"
+                android:directBootAware="true"
+                android:exported="true"
+                android:permission="lineageos.permission.BIND_PUSH_PROVIDER_SERVICE">
+            <intent-filter>
+                <action android:name="org.lineageos.pushbroker.action.PUSH_PROVIDER" />
+            </intent-filter>
+
+            <meta-data
+                    android:name="org.lineageos.pushbroker.provider_id"
+                    android:value="com.xiaomi.xmsf.mipush" />
+            <meta-data
+                    android:name="org.lineageos.pushbroker.api_version"
+                    android:value="4" />
+            <meta-data
+                    android:name="org.lineageos.pushbroker.display_name"
+                    android:value="MiPush Framework" />
+            <meta-data
+                    android:name="org.lineageos.pushbroker.provider_type"
+                    android:value="native" />
+            <meta-data
+                    android:name="org.lineageos.pushbroker.capabilities"
+                    android:value="vendor_registration,provider_settings_ui,provider_diagnostics_ui" />
+            <meta-data
+                    android:name="org.lineageos.pushbroker.settings_activity"
+                    android:value="top.trumeet.mipushframework.main.AdvancedSettingsPage" />
+            <meta-data
+                    android:name="org.lineageos.pushbroker.diagnostics_activity"
+                    android:value="top.trumeet.mipushframework.main.AdvancedSettingsPage" />
+        </service>
 
         <service android:name="com.xiaomi.push.sdk.MyPushMessageHandler" />
 

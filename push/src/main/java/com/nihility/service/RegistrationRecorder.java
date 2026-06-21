@@ -8,6 +8,7 @@ import com.xiaomi.mipush.sdk.PushContainerHelper;
 import com.xiaomi.xmpush.thrift.ActionType;
 import com.xiaomi.xmpush.thrift.XmPushActionContainer;
 import com.xiaomi.xmpush.thrift.XmPushActionRegistrationResult;
+import com.xiaomi.xmsf.pushbroker.MiPushProviderService;
 
 import top.trumeet.common.utils.Utils;
 
@@ -28,12 +29,16 @@ public class RegistrationRecorder {
         String regSec = getRegSec(context, container);
         if (regSec != null) {
             Utils.setRegSec(container.getPackageName(), regSec);
+            MiPushProviderService.reportAppRegistered(container.getPackageName());
         }
     }
 
     public static String getRegSec(Context pushService, XmPushActionContainer container) {
         try {
             XmPushActionRegistrationResult result = (XmPushActionRegistrationResult) PushContainerHelper.getResponseMessageBodyFromContainer(pushService, container);
+            if (result == null || result.errorCode != 0) {
+                return null;
+            }
             return result.getRegSecret();
         } catch (Throwable e) {
             logger.e("cannot save RegSec", e);

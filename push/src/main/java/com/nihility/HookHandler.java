@@ -86,6 +86,13 @@ public class HookHandler implements HookedMethodHandler {
         Singleton.<LogXMPushServiceAspect>instance().setConnectionStatus(joinPoint, newStatus, reason, e);
     }
 
+    @Override
+    public Object scheduleConnect(final ProceedingJoinPoint joinPoint, XMPushService pushService,
+                                  boolean immediate) throws Throwable {
+        return Singleton.<LogXMPushServiceAspect>instance()
+                .scheduleConnect(joinPoint, pushService, immediate);
+    }
+
     public void sendMessage(final JoinPoint joinPoint, Intent intent) {
         Singleton.<LogXMPushServiceAspect>instance().sendMessage(joinPoint, intent);
     }

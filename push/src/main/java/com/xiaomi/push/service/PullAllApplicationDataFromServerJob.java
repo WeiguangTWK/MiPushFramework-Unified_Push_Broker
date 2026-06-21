@@ -4,6 +4,7 @@ import android.content.SharedPreferences;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.nihility.XMPushUtils;
 import com.xiaomi.xmpush.thrift.XmPushActionNotification;
@@ -13,6 +14,7 @@ import java.util.Map;
 import top.trumeet.common.utils.Utils;
 
 public class PullAllApplicationDataFromServerJob extends XMPushService.Job {
+    private static final String PREF_REGISTERED_PKG_NAMES = "pref_registered_pkg_names";
     private final XmPushActionOperator xmPushActionOperator;
 
     public PullAllApplicationDataFromServerJob(XMPushService xmPushService) {
@@ -27,7 +29,7 @@ public class PullAllApplicationDataFromServerJob extends XMPushService.Job {
 
     @Override
     public void process() {
-        SharedPreferences sp = Utils.getApplication().getSharedPreferences("pref_registered_pkg_names", 0);
+        SharedPreferences sp = Utils.getApplication().getSharedPreferences(PREF_REGISTERED_PKG_NAMES, 0);
         for (Map.Entry<String, ?> entry : sp.getAll().entrySet()) {
             String packageName = entry.getKey();
             String appId = entry.getValue() == null ? null : entry.getValue().toString();
@@ -35,10 +37,37 @@ public class PullAllApplicationDataFromServerJob extends XMPushService.Job {
                 continue;
             }
 
-            xmPushActionOperator.sendMessage(
-                    XMPushUtils.packToContainer(getPullAction(appId), packageName),
-                    packageName);
+            sendPullForAppId(xmPushActionOperator, packageName, appId);
         }
+    }
+
+    public static @Nullable String getRegisteredAppId(String packageName) {
+        if (TextUtils.isEmpty(packageName)) {
+            return null;
+        }
+        final SharedPreferences sp = Utils.getApplication()
+                .getSharedPreferences(PREF_REGISTERED_PKG_NAMES, 0);
+        final String appId = sp.getString(packageName, null);
+        return TextUtils.isEmpty(appId) ? null : appId;
+    }
+
+    public static boolean syncApplication(XMPushService xmPushService, String packageName) {
+        if (xmPushService == null || TextUtils.isEmpty(packageName)) {
+            return false;
+        }
+        final String appId = getRegisteredAppId(packageName);
+        if (TextUtils.isEmpty(appId)) {
+            return false;
+        }
+        sendPullForAppId(new XmPushActionOperator(xmPushService), packageName, appId);
+        return true;
+    }
+
+    private static void sendPullForAppId(XmPushActionOperator actionOperator, String packageName,
+            String appId) {
+        actionOperator.sendMessage(
+                XMPushUtils.packToContainer(getPullAction(appId), packageName),
+                packageName);
     }
 
     public static @NonNull XmPushActionNotification getPullAction(String appId) {

@@ -100,7 +100,9 @@ public class NotificationController {
         return notificationCntInGroup;
     }
 
-    public static void publish(Context context, PushMetaInfo metaInfo, int notificationId, String packageName, NotificationCompat.Builder notificationBuilder) {
+    public static Notification publish(Context context, PushMetaInfo metaInfo, int notificationId,
+                                       String packageName,
+                                       NotificationCompat.Builder notificationBuilder) {
         String channelId = getExistsChannelId(context, metaInfo, packageName);
         notificationBuilder.setChannelId(channelId);
 
@@ -113,6 +115,7 @@ public class NotificationController {
         Notification notification = notify(context, notificationId, packageName, notificationBuilder, metaInfo);
 
         updateSummaryNotification(context, metaInfo, packageName, notification.getGroup());
+        return notification;
     }
 
     @NonNull

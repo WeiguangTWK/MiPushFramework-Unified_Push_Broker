@@ -87,23 +87,7 @@ public class MiuiPushActivateService extends IntentService {
 
     protected void onHandleIntent(Intent intent) {
         if ("com.xiaomi.xmsf.push.SCAN".equals(intent.getAction())) {
-            long j = 0;
-            for (final String str : getPackages()) {
-                if (!isPackageRegistered(str)) {
-                    j += 60000;
-                    this.handler.postDelayed(new Runnable() {
-                        public void run() {
-                            try {
-                                Intent intent = new Intent("com.xiaomi.xmsf.push.SCAN");
-                                intent.setPackage(str);
-                                MiuiPushActivateService.this.startService(intent);
-                            } catch (Throwable th) {
-                                logger.e("unable to start service" + th.getMessage());
-                            }
-                        }
-                    }, j);
-                }
-            }
+            logger.i("Skip legacy SCAN; Broker owns cold-start discovery and prepare scheduling");
         } else if ("com.xiaomi.xmsf.push.ACCOUNT_CHANGE".equals(intent.getAction())) {
             for (String str2 : getPackages()) {
                 if (isPackageRegistered(str2)) {

@@ -5,12 +5,11 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.widget.Toast;
 
-import androidx.core.content.ContextCompat;
-
 import com.elvishew.xlog.Logger;
 import com.elvishew.xlog.XLog;
 import com.nihility.Global;
 import com.xiaomi.xmsf.R;
+import com.xiaomi.xmsf.pushbroker.ProviderActivationStore;
 import com.xiaomi.xmsf.push.control.PushControllerUtils;
 import com.xiaomi.xmsf.push.utils.Configurations;
 import com.xiaomi.xmsf.utils.ConvertUtils;
@@ -38,6 +37,12 @@ public class XMPushService extends IntentService {
             return;
         }
 
+        if (!ProviderActivationStore.isProviderEnabled(this)) {
+            logger.i("Skip bridge start because Broker provider is disabled. intent="
+                    + ConvertUtils.toJson(intent));
+            return;
+        }
+
         try {
             forwardToPushServiceMain(intent);
         } catch (RuntimeException e) {
@@ -51,7 +56,7 @@ public class XMPushService extends IntentService {
         intent2.setComponent(new ComponentName(this, com.xiaomi.push.service.XMPushService.class));
         intent2.setAction(intent.getAction());
         intent2.putExtras(intent);
-        ContextCompat.startForegroundService(this, intent2);
+        startService(intent2);
         logger.d("forward intent " + ConvertUtils.toJson(intent));
     }
 

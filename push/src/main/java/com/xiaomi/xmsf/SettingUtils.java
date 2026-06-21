@@ -12,8 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.elvishew.xlog.XLog;
 import com.nihility.Global;
-import com.nihility.utils.RegistrationHelper;
 import com.catchingnow.icebox.sdk_client.IceBox;
 import com.nihility.InternalMessenger;
 import com.xiaomi.push.service.PushConstants;
@@ -30,7 +30,6 @@ import top.trumeet.common.Constants;
 import top.trumeet.common.utils.Utils;
 import top.trumeet.mipush.provider.db.EventDb;
 import top.trumeet.mipush.provider.entities.RegisteredApplication;
-import top.trumeet.mipushframework.main.subpage.ApplicationPageOperation;
 
 public class SettingUtils {
     public static final int requestIceBoxCode = 0x233;
@@ -65,6 +64,22 @@ public class SettingUtils {
         new InternalMessenger(context).send(new Intent(XMPushServiceMessenger.IntentStartForeground));
     }
 
+    public static void startMiPushServiceAsForegroundService(Context context, String statusText) {
+        final Intent intent = new Intent(XMPushServiceMessenger.IntentStartForeground);
+        intent.putExtra(XMPushServiceMessenger.EXTRA_FOREGROUND_STATUS, statusText);
+        new InternalMessenger(context).send(intent);
+    }
+
+    public static void updateMiPushForegroundStatus(Context context, String statusText) {
+        final Intent intent = new Intent(XMPushServiceMessenger.IntentUpdateForeground);
+        intent.putExtra(XMPushServiceMessenger.EXTRA_FOREGROUND_STATUS, statusText);
+        new InternalMessenger(context).send(intent);
+    }
+
+    public static void stopMiPushForegroundService(Context context) {
+        new InternalMessenger(context).send(new Intent(XMPushServiceMessenger.IntentStopForeground));
+    }
+
     public static void notifyMockNotification(Context context) {
         String packageName = BuildConfig.APPLICATION_ID;
         Date date = new Date();
@@ -78,11 +93,8 @@ public class SettingUtils {
     }
 
     public static void tryForceRegisterAllApplications() {
-        ApplicationPageOperation.MiPushApplications miPushApplications =
-                ApplicationPageOperation.getMiPushApplications();
-        for (RegisteredApplication registeredApplication : miPushApplications.res) {
-            RegistrationHelper.tryForceRegister(registeredApplication.getPackageName());
-        }
+        XLog.tag(SettingUtils.class.getSimpleName()).build()
+                .i("Skip legacy global force-register; Broker now owns discovery and app prepare");
     }
 
     public static void sendXMPPReconnectRequest(Context context) {

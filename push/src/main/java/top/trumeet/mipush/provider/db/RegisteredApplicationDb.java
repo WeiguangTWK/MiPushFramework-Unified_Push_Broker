@@ -24,9 +24,13 @@ import top.trumeet.mipush.provider.entities.RegisteredApplication;
  */
 
 public class RegisteredApplicationDb {
+    private static void ensureDaoSession() {
+        top.trumeet.mipush.provider.DatabaseUtils.requireDaoSession(Utils.getApplication());
+    }
 
     @NonNull
     public static RegisteredApplication registerApplication(String pkg) {
+        ensureDaoSession();
         RegisteredApplication registeredApplication = getRegisteredApplication(pkg);
         if (registeredApplication == null) {
             return create(pkg);
@@ -36,6 +40,7 @@ public class RegisteredApplicationDb {
 
     @Nullable
     public static RegisteredApplication getRegisteredApplication(String pkg) {
+        ensureDaoSession();
         List<RegisteredApplication> list = getList(pkg);
         if (DEBUG) {
             Log.d("RegisteredApplicationDb", "register -> existing list = " + list.toString());
@@ -63,6 +68,7 @@ public class RegisteredApplicationDb {
     }
 
     public static List<RegisteredApplication> getList(@Nullable String pkg) {
+        ensureDaoSession();
         QueryBuilder<RegisteredApplication> query = daoSession.queryBuilder(RegisteredApplication.class);
         if (!TextUtils.isEmpty(pkg)) {
             query.where(RegisteredApplicationDao.Properties.PackageName.eq(pkg));
@@ -71,11 +77,13 @@ public class RegisteredApplicationDb {
     }
 
     public static long update(RegisteredApplication application) {
+        ensureDaoSession();
         daoSession.insertOrReplace(application);
         return application.getId();
     }
 
     private static long insert(RegisteredApplication application) {
+        ensureDaoSession();
         return daoSession.insert(application);
     }
 }

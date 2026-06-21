@@ -39,6 +39,10 @@
     <string name="notification_category_warning">警告</string>
 
     <string name="notification_alive">推送服务运行中</string>
+    <string name="notification_connecting">正在建立推送连接</string>
+    <string name="notification_recovering">正在恢复推送连接</string>
+    <string name="notification_recover_failed_retrying">恢复连接失败，稍后重试</string>
+    <string name="notification_disconnected">推送连接已断开</string>
 
     <string name="notification_group_applications">应用程序</string>
     <string name="notification_stats_permission_title">请授予“使用情况”权限</string>
@@ -175,6 +179,8 @@
     <string name="settings_configuration_directory">设置配置目录</string>
     <string name="settings_XMPP_server">设置 XMPP 服务器</string>
     <string name="settings_XMPP_server_summary">设置 发送/接收 消息的服务器</string>
+    <string name="settings_provider_disabled_banner">当前未作为系统推送提供方启用</string>
+    <string name="settings_provider_disabled_xmpp_summary">当前仅保存配置，不会立即重连，因为此提供方已禁用。</string>
 
     <string name="settings_get_log">获取日志</string>
     <string name="settings_get_log_summary">点按分享日志，必要时请随 Issue 一起提交。</string>

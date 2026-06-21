@@ -47,6 +47,7 @@ import com.xiaomi.push.sdk.MyPushMessageHandler;
 import com.xiaomi.xmpush.thrift.PushMetaInfo;
 import com.xiaomi.xmpush.thrift.XmPushActionContainer;
 import com.xiaomi.xmsf.R;
+import com.xiaomi.xmsf.pushbroker.MiPushProviderService;
 import com.xiaomi.xmsf.push.notification.NotificationController;
 import com.xiaomi.xmsf.push.utils.Configurations;
 import com.xiaomi.xmsf.push.utils.IconConfigurations;
@@ -218,7 +219,10 @@ public class MyMIPushNotificationHelper {
 
         NotificationInfo result = getNotificationFor(context, container, decryptedContent);
 
-        NotificationController.publish(context, metaInfo, result.notificationId, container.getPackageName(), result.notificationBuilder);
+        Notification notification = NotificationController.publish(context, metaInfo,
+                result.notificationId, container.getPackageName(), result.notificationBuilder);
+        MiPushProviderService.reportBusinessNotificationPosted(container, result.notificationId,
+                getNotificationTag(container), notification);
     }
 
     private static void logPushMessage(PushMetaInfo metaInfo) {

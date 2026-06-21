@@ -4,6 +4,7 @@ import com.xiaomi.channel.commonutils.reflect.JavaCalls;
 import com.xiaomi.network.Fallback;
 import com.xiaomi.network.HostManager;
 import com.xiaomi.smack.ConnectionConfiguration;
+import com.xiaomi.xmsf.pushbroker.ProviderActivationStore;
 
 class ResetConnectJob extends XMPushService.Job {
 
@@ -21,6 +22,9 @@ class ResetConnectJob extends XMPushService.Job {
 
     @Override
     public void process() {
+        if (!ProviderActivationStore.isProviderEnabled(xmPushService)) {
+            return;
+        }
         Fallback fallback = HostManager.getInstance().getFallbacksByHost(ConnectionConfiguration.getXmppServerHost(), false);
         JavaCalls.setField(fallback, "timestamp", 0);
         HostManager.getInstance().getFallbacksByHost(ConnectionConfiguration.getXmppServerHost(), true);

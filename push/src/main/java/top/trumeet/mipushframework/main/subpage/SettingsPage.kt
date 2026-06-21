@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -29,6 +31,7 @@ import com.nihility.InternalMessenger
 import com.xiaomi.push.service.XMPushServiceMessenger
 import com.xiaomi.xmsf.R
 import com.xiaomi.xmsf.SettingUtils
+import com.xiaomi.xmsf.pushbroker.ProviderActivationStore
 import top.trumeet.common.utils.Utils
 import top.trumeet.mipushframework.MainPageOperation
 import top.trumeet.mipushframework.component.SettingsGroup
@@ -54,15 +57,35 @@ fun Settings() {
 
 @Composable
 private fun SettingsScreen() {
+    val context = LocalContext.current
+    val providerEnabled = remember { ProviderActivationStore.isProviderEnabled(context) }
     Column {
-        ServiceConfigurationBlock()
+        if (!providerEnabled) {
+            DisabledProviderBanner()
+        }
+        ServiceConfigurationBlock(providerEnabled)
         DebugBlock()
         AboutBlock()
     }
 }
 
 @Composable
-private fun ServiceConfigurationBlock() {
+private fun DisabledProviderBanner() {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Text(
+            text = stringResource(R.string.settings_provider_disabled_banner),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSecondaryContainer
+        )
+    }
+}
+
+@Composable
+private fun ServiceConfigurationBlock(providerEnabled: Boolean) {
     val context = LocalContext.current
 
     SettingsGroup(title = stringResource(R.string.settings_service_setting)) {
@@ -74,13 +97,13 @@ private fun ServiceConfigurationBlock() {
         }
 
         SetConfigurationsDirectory()
-        SetXMPPServer(context)
+        SetXMPPServer(context, providerEnabled)
     }
 }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun SetXMPPServer(context: Context) {
+private fun SetXMPPServer(context: Context, providerEnabled: Boolean) {
     var currentXMPPServer by remember { mutableStateOf("") }
     object : InternalMessenger(context) {
         init {
@@ -97,15 +120,23 @@ private fun SetXMPPServer(context: Context) {
         }
     }
     var text by remember { mutableStateOf(SettingUtils.getXMPPServer(context) ?: "") }
+    val disabledSummary = if (providerEnabled) {
+        ""
+    } else {
+        "\n" + stringResource(R.string.settings_provider_disabled_xmpp_summary)
+    }
     SettingsItem(title = stringResource(R.string.settings_XMPP_server),
         summary = stringResource(R.string.settings_XMPP_server_summary) +
                 "\nSet: [${SettingUtils.getXMPPServer(context) ?: ""}]" +
-                "\nCurrent: [$currentXMPPServer]",
+                "\nCurrent: [$currentXMPPServer]" +
+                disabledSummary,
         confirmButton = { dismiss: () -> Unit ->
             TextButton(onClick = {
                 SettingUtils.setXMPPServer(context, text)
-                SettingUtils.sendXMPPReconnectRequest(context)
-                currentXMPPServer = text
+                if (providerEnabled) {
+                    SettingUtils.sendXMPPReconnectRequest(context)
+                    currentXMPPServer = text
+                }
                 dismiss()
             }) {
                 Text(stringResource(android.R.string.ok))
@@ -162,11 +193,6 @@ private fun DebugBlock() {
             SettingUtils.shareLogs(context)
         }
 
-        SettingsItem(
-            title = stringResource(R.string.try_to_force_register_all_applications)
-        ) {
-            SettingUtils.tryForceRegisterAllApplications()
-        }
     }
 }
 
@@ -203,4 +229,3 @@ fun SettingsPagePreview() {
     Utils.context = LocalContext.current
     Settings()
 }
-

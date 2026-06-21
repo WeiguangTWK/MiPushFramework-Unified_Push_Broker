@@ -75,7 +75,6 @@ private fun SettingsScreen() {
 
 @Composable
 fun ConfigurationsBlock() {
-    val context = LocalContext.current
     SettingsGroup(title = stringResource(R.string.settings_options)) {
         SettingsItem(
             title = stringResource(R.string.settings_notify_on_register),
@@ -98,14 +97,6 @@ fun ConfigurationsBlock() {
             key = "ShowAllEvents",
             defaultValue = false,
         )
-        SettingsItem(
-            title = stringResource(R.string.settings_start_foreground_service),
-            summary = stringResource(R.string.settings_start_foreground_service_summary),
-            key = "StartForegroundService",
-            defaultValue = false,
-        ) {
-            SettingUtils.startMiPushServiceAsForegroundService(context)
-        }
         SettingsItem(
             title = stringResource(R.string.pref_title_access_mode),
             summary = stringResource(R.string.pref_summary_access_mode),
@@ -186,4 +177,3 @@ private fun SettingsPreview() {
     Utils.context = LocalContext.current
     SettingsApp()
 }
-

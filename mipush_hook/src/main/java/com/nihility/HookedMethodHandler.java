@@ -44,6 +44,9 @@ public interface HookedMethodHandler {
     void setConnectionStatus(JoinPoint joinPoint,
                              int newStatus, int reason, Exception e);
 
+    Object scheduleConnect(ProceedingJoinPoint joinPoint, XMPushService pushService,
+                           boolean immediate) throws Throwable;
+
     void sendMessage(JoinPoint joinPoint, Intent intent);
 
     void logCheckServices(JoinPoint joinPoint, PackageInfo pkgInfo);

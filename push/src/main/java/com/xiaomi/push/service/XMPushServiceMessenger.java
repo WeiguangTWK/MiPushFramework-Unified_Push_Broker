@@ -7,24 +7,35 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
+import com.elvishew.xlog.Logger;
+import com.elvishew.xlog.XLog;
 import com.nihility.InternalMessenger;
 import com.nihility.service.ForegroundHelper;
 import com.xiaomi.smack.Connection;
+import com.xiaomi.xmsf.pushbroker.ProviderActivationStore;
 
 public class XMPushServiceMessenger extends InternalMessenger {
     public final static String IntentGetConnectionStatus = "getConnectionStatus";
     public final static String IntentSetConnectionStatus = "setConnectionStatus";
     public final static String IntentStartForeground = "startForeground";
+    public final static String IntentUpdateForeground = "updateForeground";
+    public final static String IntentStopForeground = "stopForeground";
+    public final static String EXTRA_FOREGROUND_STATUS = "foregroundStatus";
 
+    private static final Logger LOGGER = XLog.tag("XMPushServiceMessenger").build();
     private final XMPushService xmPushService;
+    private final ForegroundHelper foregroundHelper;
     private int connectionStatus;
 
     public XMPushServiceMessenger(XMPushService context) {
         super(context);
         this.xmPushService = context;
+        this.foregroundHelper = new ForegroundHelper(xmPushService);
         register(new IntentFilter(IntentGetConnectionStatus));
         register(new IntentFilter(PushConstants.ACTION_RESET_CONNECTION));
         register(new IntentFilter(IntentStartForeground));
+        register(new IntentFilter(IntentUpdateForeground));
+        register(new IntentFilter(IntentStopForeground));
     }
 
     @Override
@@ -50,9 +61,21 @@ public class XMPushServiceMessenger extends InternalMessenger {
 
     private void handle(Intent intent) {
         if (TextUtils.equals(intent.getAction(), PushConstants.ACTION_RESET_CONNECTION)) {
+            if (!ProviderActivationStore.isProviderEnabled(xmPushService)) {
+                LOGGER.i("Ignore resetConnection because Broker provider is disabled");
+                return;
+            }
             resetConnection();
         } else if (TextUtils.equals(intent.getAction(), IntentStartForeground)) {
-            new ForegroundHelper(xmPushService).startForeground();
+            LOGGER.i("startForeground action");
+            foregroundHelper.startForeground(intent.getStringExtra(EXTRA_FOREGROUND_STATUS));
+        } else if (TextUtils.equals(intent.getAction(), IntentUpdateForeground)) {
+            LOGGER.i("updateForeground action");
+            foregroundHelper.updateForegroundNotification(
+                    intent.getStringExtra(EXTRA_FOREGROUND_STATUS));
+        } else if (TextUtils.equals(intent.getAction(), IntentStopForeground)) {
+            LOGGER.i("stopForeground action");
+            foregroundHelper.stopForegroundNotification();
         }
     }
 

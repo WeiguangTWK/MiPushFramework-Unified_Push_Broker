@@ -2,7 +2,6 @@ package top.trumeet.mipush.provider.db;
 
 import static top.trumeet.mipush.provider.DatabaseUtils.daoSession;
 
-import android.content.Context;
 import android.net.Uri;
 
 import androidx.annotation.NonNull;
@@ -21,7 +20,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import top.trumeet.common.utils.DatabaseUtils;
 import top.trumeet.common.utils.Utils;
 import top.trumeet.mipush.provider.entities.Event;
 import top.trumeet.mipush.provider.event.EventType;
@@ -37,16 +35,17 @@ public class EventDb {
     public static final String BASE_PATH = "EVENT";
     public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/" + BASE_PATH);
 
-    private static DatabaseUtils getInstance(Context context) {
-        return new DatabaseUtils(CONTENT_URI, context.getContentResolver());
-    }
-
     public static class RegistrationInfo {
         public Set<String> registered = new HashSet<>();
         public Set<String> unregistered = new HashSet<>();
     }
 
+    private static void ensureDaoSession() {
+        top.trumeet.mipush.provider.DatabaseUtils.requireDaoSession(Utils.getApplication());
+    }
+
     public static long insertEvent(Event event) {
+        ensureDaoSession();
         if (event.getType() == Event.Type.SendMessage) {
             Utils.setLastReceiveTime(event.getPkg(), event.getDate());
         }
@@ -74,6 +73,7 @@ public class EventDb {
             @Nullable Long lastId, int size,
             @Nullable Set<Integer> types,
             @Nullable String pkg, @Nullable String text) {
+        ensureDaoSession();
         QueryBuilder<Event> query = daoSession.queryBuilder(Event.class)
                 .orderDesc(EventDao.Properties.Id)
                 .limit(size);
@@ -103,6 +103,7 @@ public class EventDb {
             int skip, int limit,
             @Nullable Set<Integer> types,
             @Nullable String pkg, @Nullable String text) {
+        ensureDaoSession();
         QueryBuilder<Event> query = daoSession.queryBuilder(Event.class)
                 .orderDesc(EventDao.Properties.Date)
                 .limit(limit)
@@ -120,6 +121,7 @@ public class EventDb {
     }
 
     public static void deleteHistory() {
+        ensureDaoSession();
         String data = (Utils.getUTC().getTime() - 1000L * 3600L * 24 * 7) + "";
         QueryBuilder<Event> query = daoSession.queryBuilder(Event.class)
                 .where(EventDao.Properties.Type.in(Event.Type.RECEIVE_PUSH, Event.Type.REGISTER, Event.Type.Command))
@@ -128,6 +130,7 @@ public class EventDb {
     }
 
     public static RegistrationInfo queryRegistered() {
+        ensureDaoSession();
         QueryBuilder<Event> query = daoSession.queryBuilder(Event.class)
                 .where(EventDao.Properties.Type.in(Event.Type.RegistrationResult, Event.Type.UnRegistration))
                 .where(new WhereCondition.StringCondition("1" +

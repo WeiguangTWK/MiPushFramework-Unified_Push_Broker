@@ -1,6 +1,5 @@
 package com.xiaomi.xmsf;
 
-import static com.xiaomi.xmsf.push.control.PushControllerUtils.isAppMainProc;
 import static com.xiaomi.xmsf.push.notification.NotificationController.CHANNEL_WARN;
 import static top.trumeet.common.Constants.TAG_CONDOM;
 
@@ -9,9 +8,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Build;
 
 import androidx.core.app.NotificationChannelCompat;
@@ -27,26 +24,13 @@ import com.oasisfeng.condom.CondomOptions;
 import com.oasisfeng.condom.CondomProcess;
 import com.xiaomi.xmsf.push.control.PushControllerUtils;
 import com.xiaomi.xmsf.push.control.XMOutbound;
-import com.xiaomi.xmsf.push.service.MiuiPushActivateService;
 import com.xiaomi.xmsf.utils.LogUtils;
 
 import top.trumeet.common.Constants;
 import top.trumeet.common.push.PushServiceAccessibility;
 import top.trumeet.common.utils.Utils;
-import top.trumeet.mipush.provider.DatabaseUtils;
-
-
 public class MiPushFrameworkApp extends Application {
     private com.elvishew.xlog.Logger logger;
-
-    private static final String MIPUSH_EXTRA = "mipush_extra";
-
-
-    @Override
-    public void attachBaseContext(Context context) {
-        super.attachBaseContext(context);
-        DatabaseUtils.init(this);
-    }
 
     @Override
     public void onCreate() {
@@ -66,9 +50,6 @@ public class MiPushFrameworkApp extends Application {
 
         installCondom();
 
-        PushControllerUtils.setAllEnable(true, this);
-
-        awakePushActivateServiceOnMainProc(PushControllerUtils.wrapContext(this));
         requestDozeWhiteList();
     }
 
@@ -80,19 +61,6 @@ public class MiPushFrameworkApp extends Application {
             }
         } catch (RuntimeException e) {
             logger.e(e.getMessage(), e);
-        }
-    }
-
-    private void awakePushActivateServiceOnMainProc(Context context) {
-        if (isAppMainProc(this)) {
-            long currentTimeMillis = System.currentTimeMillis();
-            long elapsedMs = currentTimeMillis - getLastStartupTime();
-            int fiveMinutesMs = 300_000;
-            if (elapsedMs > fiveMinutesMs || elapsedMs < 0) {
-                setStartupTime(currentTimeMillis);
-                MiuiPushActivateService.awakePushActivateService(
-                        context, "com.xiaomi.xmsf.push.SCAN");
-            }
         }
     }
 
@@ -143,18 +111,4 @@ public class MiPushFrameworkApp extends Application {
             manager.createNotificationChannel(channel.build());
         }
     }
-
-
-    private long getLastStartupTime() {
-        return getDefaultPreferences().getLong("xmsf_startup", 0);
-    }
-
-    private boolean setStartupTime(long j) {
-        return getDefaultPreferences().edit().putLong("xmsf_startup", j).commit();
-    }
-
-    private SharedPreferences getDefaultPreferences() {
-        return getSharedPreferences(MIPUSH_EXTRA, 0);
-    }
-
 }
