@@ -368,7 +368,7 @@ public class MiPushProviderService extends Service {
                 BuildConfig.VERSION_NAME,
                 BuildConfig.VERSION_CODE,
                 API_VERSION,
-                PushProviderInfo.TRUST_USER_APPROVED,
+                PushProviderInfo.TRUST_USER_INSTALLED,
                 SETTINGS_ACTIVITY,
                 DIAGNOSTICS_ACTIVITY,
                 CAPABILITIES);
