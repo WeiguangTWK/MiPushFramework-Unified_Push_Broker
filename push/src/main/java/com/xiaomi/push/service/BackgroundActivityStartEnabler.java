@@ -63,8 +63,10 @@ public class BackgroundActivityStartEnabler {
         for (int channelPostfix = 0; ; ) {
             @Nullable NotificationChannel channel = nm.getNotificationChannel(channelId);
             if (channel == null) {
-                if (CHANNEL_STATUS.equals(channelId)) // todo: need to fix to break infinite loop
+                if (CHANNEL_STATUS.equals(channelId)) {
+                    channelId = CHANNEL_STATUS + (++channelPostfix);
                     continue;     // Never create original channel "status" here.
+                }
                 channel = new NotificationChannel(channelId, context.getString(R.string.notification_category_alive), IMPORTANCE_LOW);
                 nm.createNotificationChannel(channel);
                 break;
