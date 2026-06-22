@@ -9,6 +9,8 @@ import android.os.Build
 import android.os.Build.VERSION_CODES
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -63,6 +65,7 @@ class ApplicationInfoPage : ComponentActivity() {
     companion object {
         const val EXTRA_PACKAGE_NAME: String = "EXTRA_PACKAGE_NAME"
         const val EXTRA_IGNORE_NOT_REGISTERED: String = "EXTRA_IGNORE_NOT_REGISTERED"
+        private const val TAG = "ApplicationInfoPage"
     }
 
     private lateinit var applicationInfo: RegisteredApplication
@@ -185,6 +188,7 @@ class ApplicationInfoPage : ComponentActivity() {
     private fun Misc() {
         Tips()
         RecentEvents()
+        ForceRegistration()
         ShowRegistrationRequestSwitch()
     }
 
@@ -216,6 +220,47 @@ class ApplicationInfoPage : ComponentActivity() {
         ) {
             appConfigurationUtils.gotoRecentEventsPage()
         }
+    }
+
+    @Composable
+    private fun ForceRegistration() {
+        SettingsItem(
+            title = stringResource(R.string.force_register_application),
+            summary = stringResource(R.string.force_register_application_summary)
+        ) {
+            forceRegisterApplication()
+        }
+    }
+
+    private fun forceRegisterApplication() {
+        val packageName = applicationInfo.packageName
+        Utils.makeText(
+            this,
+            getString(R.string.force_register_application_started, packageName),
+            Toast.LENGTH_SHORT
+        )
+        Thread {
+            try {
+                Log.i(TAG, "Force register requested for $packageName")
+                RegistrationHelper(
+                    this@ApplicationInfoPage,
+                    packageName
+                ).deleteRegistrationInfoAndRetryForceRegister()
+                Utils.makeText(
+                    this@ApplicationInfoPage,
+                    getString(R.string.force_register_application_finished, packageName),
+                    Toast.LENGTH_SHORT
+                )
+                Log.i(TAG, "Force register dispatched for $packageName")
+            } catch (e: Throwable) {
+                Log.w(TAG, "Force register failed for $packageName", e)
+                Utils.makeText(
+                    this@ApplicationInfoPage,
+                    getString(R.string.force_register_application_failed, packageName),
+                    Toast.LENGTH_LONG
+                )
+            }
+        }.start()
     }
 
     @Composable

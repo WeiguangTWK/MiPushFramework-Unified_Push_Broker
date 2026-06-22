@@ -283,6 +283,11 @@ This could be the application doing a reverse registration, or the registration 
 
     <string name="settings_manage_app_notifications">Manage notifications</string>
     <string name="settings_manage_app_notifications_summary">Control the sound, importance level, etc. of the app notifications.</string>
+    <string name="force_register_application">Force registration retry</string>
+    <string name="force_register_application_summary">Delete this app's local MiPush registration data, wake the app, and send a registration-expired signal. Use only for troubleshooting.</string>
+    <string name="force_register_application_started">Started force registration retry for %1$s</string>
+    <string name="force_register_application_finished">Force registration retry dispatched for %1$s</string>
+    <string name="force_register_application_failed">Failed to dispatch force registration retry for %1$s</string>
     <string name="group_notifications_for_same_session_clear_title">clear all notifications of session when the notification of session was clicked</string>
     <string name="show_pass_through">show \"pass through\" message as notification</string>
     <string name="action_search">Search</string>
