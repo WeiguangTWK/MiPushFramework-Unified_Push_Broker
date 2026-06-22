@@ -223,6 +223,9 @@
                     android:name="org.lineageos.pushbroker.settings_activity"
                     android:value="top.trumeet.mipushframework.main.AdvancedSettingsPage" />
             <meta-data
+                    android:name="org.lineageos.pushbroker.setup_activity"
+                    android:value="top.trumeet.mipushframework.wizard.WelcomeActivity" />
+            <meta-data
                     android:name="org.lineageos.pushbroker.diagnostics_activity"
                     android:value="top.trumeet.mipushframework.main.AdvancedSettingsPage" />
         </service>

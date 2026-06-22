@@ -16,6 +16,8 @@ public final class PushBrokerConstants {
             "org.lineageos.pushbroker.capabilities";
     public static final String META_SETTINGS_ACTIVITY =
             "org.lineageos.pushbroker.settings_activity";
+    public static final String META_SETUP_ACTIVITY =
+            "org.lineageos.pushbroker.setup_activity";
     public static final String META_DIAGNOSTICS_ACTIVITY =
             "org.lineageos.pushbroker.diagnostics_activity";
 
@@ -59,7 +61,17 @@ public final class PushBrokerConstants {
             "consecutiveRecoverFailures";
     public static final String HEALTH_BUSINESS_HEALTHY = "businessHealthy";
     public static final String HEALTH_BUSINESS_DEGRADED_REASON = "businessDegradedReason";
+    public static final String HEALTH_REQUIRES_USER_ACTION = "requiresUserAction";
+    public static final String HEALTH_USER_ACTION_REASON = "userActionReason";
+    public static final String HEALTH_USER_ACTION_SETUP_ACTIVITY = "setupActivity";
+    public static final String HEALTH_USER_ACTION_SETTINGS_ACTIVITY = "settingsActivity";
+    public static final String HEALTH_USER_ACTION_DIAGNOSTICS_ACTIVITY = "diagnosticsActivity";
     public static final String HEALTH_DEGRADED_REASON_UNKNOWN = "unknown";
+    public static final String HEALTH_USER_ACTION_REASON_SETUP_REQUIRED = "setup_required";
+    public static final String HEALTH_USER_ACTION_REASON_PERMISSION_REQUIRED = "permission_required";
+    public static final String HEALTH_USER_ACTION_REASON_ACCOUNT_REQUIRED = "account_required";
+    public static final String HEALTH_USER_ACTION_REASON_PROVIDER_DISABLED = "provider_disabled";
+    public static final String HEALTH_USER_ACTION_REASON_STORAGE_ERROR = "storage_error";
     public static final String HEALTH_DEGRADED_REASON_TRANSPORT_STALE = "transport_stale";
     public static final String HEALTH_DEGRADED_REASON_HEARTBEAT_TIMEOUT = "heartbeat_timeout";
     public static final String HEALTH_DEGRADED_REASON_AUTH_FAILED = "auth_failed";

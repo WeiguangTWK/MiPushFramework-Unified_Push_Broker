@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 
 import androidx.core.app.ActivityCompat;
 
+import com.xiaomi.xmsf.pushbroker.MiPushProviderService;
+
 import top.trumeet.common.Constants;
 import top.trumeet.mipushframework.main.MainPage;
 
@@ -16,13 +18,13 @@ import top.trumeet.mipushframework.main.MainPage;
  * @author Trumeet
  */
 
-final class WizardSPUtils {
+public final class WizardSPUtils {
     private static SharedPreferences getSp (Context context) {
         return context.getApplicationContext().getSharedPreferences(Constants.WIZARD_SP_NAME,
                 Context.MODE_PRIVATE);
     }
 
-    static boolean shouldShowWizard (Context context) {
+    public static boolean shouldShowWizard (Context context) {
         return getSp (context)
                 .getBoolean(Constants.KEY_SHOW_WIZARD, true);
     }
@@ -36,6 +38,7 @@ final class WizardSPUtils {
 
     static void finishWizard (Activity context) {
         setShouldShowWizard(false, context);
+        MiPushProviderService.reportProviderHealthChanged("wizard_completed");
         ActivityCompat.finishAffinity(context);
         context.startActivity(new Intent(context,
                 MainPage.class));

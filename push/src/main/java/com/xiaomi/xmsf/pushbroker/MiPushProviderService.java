@@ -12,6 +12,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.Process;
 import android.os.RemoteException;
@@ -46,6 +47,10 @@ import lineageos.push.PushProviderInfo;
 import top.trumeet.common.utils.Utils;
 import top.trumeet.mipush.provider.db.RegisteredApplicationDb;
 import top.trumeet.mipush.provider.entities.RegisteredApplication;
+import top.trumeet.mipushframework.wizard.WizardSPUtils;
+import top.trumeet.mipushframework.wizard.permission.AlertWindowPermissionInfo;
+import top.trumeet.mipushframework.wizard.permission.RequestIgnoreBatteryOptimizationsPermissionInfo;
+import top.trumeet.mipushframework.wizard.permission.UsageStatsPermissionInfo;
 
 public class MiPushProviderService extends Service {
     private static final Logger LOGGER = XLog.tag("MiPushProviderService").build();
@@ -55,6 +60,8 @@ public class MiPushProviderService extends Service {
     private static final String APP_IDENTITY_PACKAGE_NAME = "packageName";
     private static final String SETTINGS_ACTIVITY =
             "top.trumeet.mipushframework.main.AdvancedSettingsPage";
+    private static final String SETUP_ACTIVITY =
+            "top.trumeet.mipushframework.wizard.WelcomeActivity";
     private static final String DIAGNOSTICS_ACTIVITY =
             "top.trumeet.mipushframework.main.MainPage";
     private static final String MIPUSH_RECEIVE_MESSAGE_ACTION =
@@ -120,6 +127,7 @@ public class MiPushProviderService extends Service {
                     MiPushProviderService.this);
             final boolean pushRegistered = PushControllerUtils.pushRegistered(
                     MiPushProviderService.this);
+            final UserActionState userActionState = resolveUserActionState();
             final BusinessHealth businessHealth = resolveBusinessHealth(pushEnabled, pushRegistered);
             synchronized (mLock) {
                 health.putBoolean("initialized", mInitialized);
@@ -147,6 +155,18 @@ public class MiPushProviderService extends Service {
                     health.putString(PushBrokerConstants.HEALTH_BUSINESS_DEGRADED_REASON,
                             businessHealth.degradedReason);
                 }
+                health.putBoolean(PushBrokerConstants.HEALTH_REQUIRES_USER_ACTION,
+                        userActionState.required);
+                if (userActionState.required) {
+                    health.putString(PushBrokerConstants.HEALTH_USER_ACTION_REASON,
+                            userActionState.reason);
+                }
+                health.putString(PushBrokerConstants.HEALTH_USER_ACTION_SETUP_ACTIVITY,
+                        SETUP_ACTIVITY);
+                health.putString(PushBrokerConstants.HEALTH_USER_ACTION_SETTINGS_ACTIVITY,
+                        SETTINGS_ACTIVITY);
+                health.putString(PushBrokerConstants.HEALTH_USER_ACTION_DIAGNOSTICS_ACTIVITY,
+                        DIAGNOSTICS_ACTIVITY);
             }
             health.putBoolean("pushEnabledPreference", pushEnabled);
             health.putBoolean("pushRegistered", pushRegistered);
@@ -189,6 +209,13 @@ public class MiPushProviderService extends Service {
         public int enable() {
             synchronized (mLock) {
                 if (!mInitialized) {
+                    return PushBrokerConstants.RESULT_NOT_READY;
+                }
+                final UserActionState userActionState = resolveUserActionState();
+                if (userActionState.required) {
+                    LOGGER.w("Reject enable because user action is required: "
+                            + userActionState.reason);
+                    reportEvent(PushBrokerConstants.EVENT_PROVIDER_HEALTH_CHANGED);
                     return PushBrokerConstants.RESULT_NOT_READY;
                 }
                 mEnabled = true;
@@ -324,6 +351,7 @@ public class MiPushProviderService extends Service {
             bundle.putString("pushServiceClass",
                     com.xiaomi.xmsf.push.service.XMPushService.class.getName());
             bundle.putString("settingsActivity", SETTINGS_ACTIVITY);
+            bundle.putString("setupActivity", SETUP_ACTIVITY);
             bundle.putString("diagnosticsActivity", DIAGNOSTICS_ACTIVITY);
             final List<RegisteredApplication> apps = getRegisteredApplications();
             final String[] packages = new String[apps.size()];
@@ -370,12 +398,28 @@ public class MiPushProviderService extends Service {
                 API_VERSION,
                 PushProviderInfo.TRUST_USER_INSTALLED,
                 SETTINGS_ACTIVITY,
+                SETUP_ACTIVITY,
                 DIAGNOSTICS_ACTIVITY,
                 CAPABILITIES);
     }
 
     private void reportEvent(String eventName) {
         reportEvent(eventName, null);
+    }
+
+    public static void reportProviderHealthChanged(String reason) {
+        final MiPushProviderService service = sInstance;
+        if (service == null) {
+            return;
+        }
+        final Bundle event = new Bundle();
+        event.putLong(PushBrokerConstants.PROVIDER_EVENT_TIMESTAMP,
+                System.currentTimeMillis());
+        if (!TextUtils.isEmpty(reason)) {
+            event.putString(PushBrokerConstants.PROVIDER_EVENT_REASON_NAME, reason);
+        }
+        service.reportEvent(PushBrokerConstants.EVENT_PROVIDER_HEALTH_CHANGED, event);
+        LOGGER.i("Reported provider health changed reason=" + reason);
     }
 
     public static void reportAppRegistered(String packageName) {
@@ -453,6 +497,62 @@ public class MiPushProviderService extends Service {
                     PushBrokerConstants.HEALTH_DEGRADED_REASON_APP_REGISTRY_UNAVAILABLE);
         }
         return BusinessHealth.healthy();
+    }
+
+    private UserActionState resolveUserActionState() {
+        if (WizardSPUtils.shouldShowWizard(this)) {
+            return UserActionState.required(
+                    PushBrokerConstants.HEALTH_USER_ACTION_REASON_SETUP_REQUIRED);
+        }
+        if (!hasRequiredPermissions()) {
+            return UserActionState.required(
+                    PushBrokerConstants.HEALTH_USER_ACTION_REASON_PERMISSION_REQUIRED);
+        }
+        try {
+            top.trumeet.mipush.provider.DatabaseUtils.requireDaoSession(
+                    Utils.getApplication());
+            RegisteredApplicationDb.getList(null);
+        } catch (RuntimeException e) {
+            LOGGER.w("Provider requires user action because storage is unavailable", e);
+            return UserActionState.required(
+                    PushBrokerConstants.HEALTH_USER_ACTION_REASON_STORAGE_ERROR);
+        }
+        return UserActionState.ready();
+    }
+
+    private boolean hasRequiredPermissions() {
+        if (!new UsageStatsPermissionInfo(this).getPermissionOperator().isPermissionGranted()) {
+            return false;
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!new RequestIgnoreBatteryOptimizationsPermissionInfo(this)
+                    .getPermissionOperator().isPermissionGranted()) {
+                return false;
+            }
+            if (!new AlertWindowPermissionInfo(this)
+                    .getPermissionOperator().isPermissionGranted()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static final class UserActionState {
+        final boolean required;
+        final String reason;
+
+        private UserActionState(boolean required, String reason) {
+            this.required = required;
+            this.reason = reason;
+        }
+
+        static UserActionState ready() {
+            return new UserActionState(false, null);
+        }
+
+        static UserActionState required(String reason) {
+            return new UserActionState(true, reason);
+        }
     }
 
     private static final class BusinessHealth {

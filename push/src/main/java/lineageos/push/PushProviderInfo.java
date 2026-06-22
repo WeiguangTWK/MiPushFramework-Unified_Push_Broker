@@ -23,13 +23,14 @@ public final class PushProviderInfo implements Parcelable {
     public final int apiVersion;
     public final int trustLevel;
     public final String settingsActivity;
+    public final String setupActivity;
     public final String diagnosticsActivity;
     public final String[] declaredCapabilities;
 
     public PushProviderInfo(String providerId, String displayName, String packageName,
             String serviceName, String providerType, String versionName, long versionCode,
-            int apiVersion, int trustLevel, String settingsActivity, String diagnosticsActivity,
-            String[] declaredCapabilities) {
+            int apiVersion, int trustLevel, String settingsActivity, String setupActivity,
+            String diagnosticsActivity, String[] declaredCapabilities) {
         this.providerId = providerId;
         this.displayName = displayName;
         this.packageName = packageName;
@@ -40,6 +41,7 @@ public final class PushProviderInfo implements Parcelable {
         this.apiVersion = apiVersion;
         this.trustLevel = trustLevel;
         this.settingsActivity = settingsActivity;
+        this.setupActivity = setupActivity;
         this.diagnosticsActivity = diagnosticsActivity;
         this.declaredCapabilities = declaredCapabilities;
     }
@@ -55,6 +57,7 @@ public final class PushProviderInfo implements Parcelable {
         apiVersion = in.readInt();
         trustLevel = in.readInt();
         settingsActivity = in.readString();
+        setupActivity = in.readString();
         diagnosticsActivity = in.readString();
         declaredCapabilities = in.createStringArray();
     }
@@ -76,6 +79,7 @@ public final class PushProviderInfo implements Parcelable {
         dest.writeInt(apiVersion);
         dest.writeInt(trustLevel);
         dest.writeString(settingsActivity);
+        dest.writeString(setupActivity);
         dest.writeString(diagnosticsActivity);
         dest.writeStringArray(declaredCapabilities);
     }
