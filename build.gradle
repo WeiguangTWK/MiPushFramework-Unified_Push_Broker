@@ -95,7 +95,7 @@ private String getVersionNameFromGit() {
         }
         return stdout.toString().trim()
     } catch (ignored) {
-        return null
+        return 'v0.3.10-187-push-broker-26w28a'
     }
 }
 
