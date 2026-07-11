@@ -237,11 +237,11 @@
 
     <string name="settings_manage_app_notifications">管理通知</string>
     <string name="settings_manage_app_notifications_summary">控制本应用所发通知的声音、重要度等细节。</string>
-    <string name="force_register_application">强制重试注册</string>
-    <string name="force_register_application_summary">删除该应用本地 MiPush 注册数据，唤起应用，并发送注册过期信号。仅建议用于排查问题。</string>
-    <string name="force_register_application_started">已开始强制重试注册 %1$s</string>
-    <string name="force_register_application_finished">已下发强制重试注册 %1$s</string>
-    <string name="force_register_application_failed">强制重试注册 %1$s 下发失败</string>
+    <string name="force_register_application">触发重新注册</string>
+    <string name="force_register_application_summary">清除该应用本地 MiPush 注册状态，并请求应用重新注册。下发后请让目标应用保持后台正常运行，并完成一次 MiPush 消息接收；该交接成功后，后续由框架代发通知会更可靠。</string>
+    <string name="force_register_application_started">已开始触发 %1$s 重新注册</string>
+    <string name="force_register_application_finished">已下发 %1$s 重新注册请求</string>
+    <string name="force_register_application_failed">%1$s 重新注册请求下发失败</string>
     <string-array name="pref_title_access_mode_list_titles">
         <item>使用情况访问 API（性能好，推荐）</item>
         <item>辅助模式（兼容性更好）</item>
